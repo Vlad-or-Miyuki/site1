@@ -1,5 +1,7 @@
-import { useEffect, useState, type SVGProps } from 'react';
+import { useEffect, useRef, useState, type SVGProps } from 'react';
 import facadeImage from '../facade-1440.avif';
+import { GuidePage, GuidePreview } from './GuidePage';
+import { storeBrands } from './catalogData';
 
 type IconProps = SVGProps<SVGSVGElement>;
 
@@ -76,15 +78,15 @@ const Clock = (props: IconProps) => (
 
 const Sofa = (props: IconProps) => (
   <svg viewBox="0 0 32 32" fill="none" aria-hidden="true" {...props}>
-    <path d="M7 17v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5" stroke="currentColor" strokeWidth="1.7" />
-    <path d="M5 16a2 2 0 0 1 2 2v5h18v-5a2 2 0 1 1 4 0v8H3v-8a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.7" />
-    <path d="M7 23v4M25 23v4" stroke="currentColor" strokeWidth="1.7" />
+    <path d="M6 5h20v16H6z" stroke="currentColor" strokeWidth="1.7" />
+    <path d="M4 13a2 2 0 0 1 2 2v6h20v-6a2 2 0 1 1 4 0v11H2V15a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.7" />
+    <path d="M5 26v3M27 26v3" stroke="currentColor" strokeWidth="1.7" />
   </svg>
 );
 
 const Home = (props: IconProps) => (
   <svg viewBox="0 0 32 32" fill="none" aria-hidden="true" {...props}>
-    <path d="m4 14 12-10 12 10M8 12v16h16V12M13 28V17h6v11" stroke="currentColor" strokeWidth="1.7" />
+    <path d="m4 14 12-10 12 10M7 14v14h18V14M13 28V17h6v11" stroke="currentColor" strokeWidth="1.7" />
   </svg>
 );
 
@@ -107,7 +109,7 @@ const Close = (props: IconProps) => (
   </svg>
 );
 
-const mapUrl = 'https://yandex.ru/maps/?text=Богатырский%20проспект%2C%2018к2';
+const mapUrl = `https://yandex.ru/maps/?text=${encodeURIComponent('Богатырский проспект, 18к2, литера А')}`;
 
 const sitePath = (path: string) => {
   if (path.startsWith('#')) return path;
@@ -118,8 +120,9 @@ const assetPath = (path: string) =>
   `${import.meta.env.BASE_URL}${path.replace(/^\/+/, '')}`;
 
 const navItems = [
+  { label: 'Мебель и интерьер', href: sitePath('/catalog/') },
   { label: 'О центре', href: sitePath('/about/') },
-  { label: 'Схема и инфраструктура', href: sitePath('/#directions') },
+  { label: 'Схема и инфраструктура', href: sitePath('/guide/') },
   { label: 'Аренда помещений', href: sitePath('/about/#rental') },
   { label: 'Контакты и проезд', href: sitePath('/contacts/') },
 ];
@@ -129,7 +132,7 @@ const quickLinks = [
     eyebrow: 'Свободно ориентируйтесь',
     title: 'Четыре этажа комплекса',
     Icon: Layers,
-    href: '#ideas',
+    href: sitePath('/guide/#scheme'),
   },
   {
     eyebrow: 'Общественный транспорт',
@@ -150,6 +153,7 @@ const ideaCards = [
     number: '01',
     title: 'Мебель для дома',
     text: 'Идеи для гостиной, спальни и уютного пространства.',
+    href: '/catalog/divani_i_kresla/',
     Icon: Sofa,
     tone: 'sage',
   },
@@ -157,6 +161,7 @@ const ideaCards = [
     number: '02',
     title: 'Кухни и интерьер',
     text: 'Решения для обустройства и обновления дома.',
+    href: '/catalog/kuhni_i_interer/',
     Icon: Home,
     tone: 'sand',
   },
@@ -169,7 +174,393 @@ const ideaCards = [
   },
 ];
 
-const floors = [1, 2, 3, 4];
+const popularDirections = [
+  {
+    slug: 'divani_i_kresla',
+    route: '/catalog/divani_i_kresla/',
+    title: 'Диваны и кресла',
+    text: 'Мягкая мебель должна подходить размерам комнаты, сценарию использования и повседневным привычкам.',
+  },
+  {
+    slug: 'divany',
+    route: '/catalog/divani_i_kresla/divani/',
+    title: 'Диваны',
+    text: 'Диван для ежедневного отдыха и диван для сна решают разные задачи. Перед выбором измерьте свободное пространство, проходы и место для раскладывания.',
+  },
+  {
+    slug: 'kresla',
+    route: '/catalog/divani_i_kresla/kresla/',
+    title: 'Кресла',
+    text: 'Удобство кресла определяется глубиной и наклоном сиденья, поддержкой спины и соответствием росту человека.',
+  },
+  {
+    slug: 'hranenie',
+    route: '/catalog/hranenie_i_porjadok/',
+    title: 'Хранение',
+    text: 'Продуманное хранение помогает меньше загромождать комнаты. Начинайте не с фасадов, а со списка вещей и доступных размеров.',
+  },
+  {
+    slug: 'komody_i_tumby',
+    route: '/catalog/hranenie_i_porjadok/komodi_i_tumbi/',
+    title: 'Комоды и тумбы',
+    text: 'Комод полезен там, где важна вместительность без массивного шкафа. Начните с того, что именно предстоит хранить и какой доступ нужен каждый день.',
+  },
+  {
+    slug: 'krovati_i_matrasy',
+    route: '/catalog/krovati_i_matrasi/',
+    title: 'Кровати и матрасы',
+    text: 'Даже хороший матрас не будет работать как задумано, если его размер и тип не подходят выбранному основанию.',
+  },
+  {
+    slug: 'krovati',
+    route: '/catalog/krovati_i_matrasi/krovati/',
+    title: 'Кровати',
+    text: 'Выбор кровати начинается с размеров комнаты, расположения дверей и желания свободно проходить вокруг спального места.',
+  },
+  {
+    slug: 'modulnye_kuhni',
+    route: '/catalog/kuhni_i_interer/modulnye_kuhni/',
+    title: 'Модульные кухни',
+    text: 'Модульная кухня собирается из типовых корпусов, но её удобство зависит от точных замеров помещения и размещения техники.',
+  },
+  {
+    slug: 'stoly_i_stoliki',
+    route: '/catalog/stoli_i_stoliki/',
+    title: 'Столы и столики',
+    text: 'Стол выбирают не только по числу мест: важно, чтобы за ним было удобно сидеть и свободно перемещаться.',
+  },
+  {
+    slug: 'stulya',
+    route: '/catalog/stulja_i_skami/stulja/',
+    title: 'Стулья',
+    text: 'За обеденным столом важны не только форма и цвет стула, но и положение ног, поддержка спины и возможность свободно отодвинуть сиденье.',
+  },
+];
+
+function StoreBrandsSection() {
+  const cardsRef = useRef<HTMLDivElement>(null);
+  const scrollCards = (direction: -1 | 1) => {
+    const cards = cardsRef.current;
+    if (!cards) return;
+    cards.scrollBy({ left: direction * cards.clientWidth * 0.8, behavior: 'smooth' });
+  };
+
+  return (
+    <section className="catalog-stores" id="stores" aria-labelledby="catalog-stores-title">
+      <div className="catalog-stores__inner page-width">
+        <div className="catalog-stores__intro">
+          <div>
+            <p className="eyebrow">Представлены в комплексе</p>
+            <h2 id="catalog-stores-title">Магазины и бренды</h2>
+          </div>
+          <div className="catalog-stores__side">
+            <p>Познакомьтесь с магазинами и брендами, представленными в торговом центре.</p>
+            <div className="catalog-stores__controls" aria-label="Прокрутка списка магазинов">
+              <button type="button" aria-label="Прокрутить бренды назад" aria-controls="store-brands-list" onClick={() => scrollCards(-1)}>
+                <ArrowRight className="catalog-stores__arrow catalog-stores__arrow--previous" />
+              </button>
+              <button type="button" aria-label="Прокрутить бренды вперёд" aria-controls="store-brands-list" onClick={() => scrollCards(1)}>
+                <ArrowRight className="catalog-stores__arrow" />
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="catalog-stores__grid" id="store-brands-list" ref={cardsRef} role="list" aria-label="Магазины и направления мебели">
+          {storeBrands.map(({ id, name, phone, phoneHref, category, image, imageAlt }, index) => (
+            <article className={`store-card ${image ? 'store-card--photo' : 'store-card--text'}`} key={id} role="listitem">
+              {image && (
+                <div className="store-card__image-wrap">
+                  <img src={assetPath(image)} alt={imageAlt ?? name} loading="lazy" />
+                </div>
+              )}
+              <div className="store-card__body">
+                {!image && <span className="store-card__number">{String(index + 1).padStart(2, '0')}</span>}
+                <h3>{name}</h3>
+                {phoneHref ? (
+                  <a href={`tel:${phoneHref}`} aria-label={`Позвонить в магазин ${name}: ${phone}`}>
+                    {phone}
+                  </a>
+                ) : (
+                  <span className="store-card__phone">{phone}</span>
+                )}
+                <span className="store-card__category">{category}</span>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CatalogPage() {
+  return (
+    <section className="catalog-page page-width" aria-labelledby="catalog-title">
+      <div className="catalog-page__body">
+        <nav className="contacts-breadcrumb" aria-label="Навигационная цепочка">
+          <a href={sitePath('/')}>Главная</a>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">Мебель и интерьер</span>
+        </nav>
+
+        <header className="catalog-intro">
+          <p className="eyebrow">Советы по выбору</p>
+          <h1 id="catalog-title">Мебель и интерьер</h1>
+          <p>Как выбрать мебель для дома: практические ориентиры по размерам, материалам и планировке. Подготовьтесь к сравнению решений и визиту в торговый центр «Богатырь».</p>
+        </header>
+
+        <section className="catalog-directions" id="popular-directions" aria-labelledby="catalog-directions-title">
+          <h2 id="catalog-directions-title">Популярные направления</h2>
+          <div className="catalog-directions__grid">
+            {popularDirections.map(({ slug, route, title, text }) => {
+              return (
+                <a
+                  className="catalog-direction"
+                  href={sitePath(route)}
+                  id={`direction-${slug}`}
+                  key={title}
+                >
+                  <span className="eyebrow">Направление</span>
+                  <h3>{title}</h3>
+                  <span className="catalog-direction__description">{text}</span>
+                  <span className="catalog-direction__cta">Советы по выбору <ArrowUpRight /></span>
+                </a>
+              );
+            })}
+          </div>
+        </section>
+
+        <aside className="catalog-trip" aria-labelledby="catalog-trip-title">
+          <div className="catalog-trip__panel">
+            <h2 id="catalog-trip-title">Планируете поездку?</h2>
+            <p>
+              На сайте можно изучить <a href={sitePath('/guide/#scheme')}>схему четырёх этажей</a>,{' '}
+              <a href={sitePath('/contacts/#location')}>адрес</a> и{' '}
+              <a href={sitePath('/contacts/#transport')}>общественный транспорт</a>. Наличие конкретных товаров и моделей лучше уточнять перед визитом.
+            </p>
+          </div>
+        </aside>
+      </div>
+    </section>
+  );
+}
+
+function KitchenInteriorPage() {
+  return (
+    <section className="catalog-page page-width" aria-labelledby="kitchen-interior-title">
+      <div className="catalog-page__body">
+        <nav className="contacts-breadcrumb" aria-label="Навигационная цепочка">
+          <a href={sitePath('/')}>Главная</a>
+          <span aria-hidden="true">/</span>
+          <a href={sitePath('/catalog/')}>Мебель и интерьер</a>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">Кухни и интерьер</span>
+        </nav>
+
+        <header className="catalog-intro">
+          <p className="eyebrow">Кухни и интерьер</p>
+          <h1 id="kitchen-interior-title">Кухни и интерьер</h1>
+          <p>Решения для обустройства и обновления дома.</p>
+        </header>
+
+        <section className="catalog-directions" aria-labelledby="kitchen-interior-directions-title">
+          <h2 id="kitchen-interior-directions-title">Популярные направления</h2>
+          <div className="catalog-directions__grid">
+            <a className="catalog-direction" href={sitePath('/catalog/kuhni_i_interer/modulnye_kuhni/')}>
+              <span className="eyebrow">Направление</span>
+              <h3>Модульные кухни</h3>
+              <span className="catalog-direction__description">
+                Модульная кухня собирается из типовых корпусов, но её удобство зависит от точных замеров помещения и размещения техники.
+              </span>
+              <span className="catalog-direction__cta">Советы по выбору <ArrowUpRight /></span>
+            </a>
+          </div>
+        </section>
+
+        <aside className="catalog-trip" aria-labelledby="kitchen-interior-trip-title">
+          <div className="catalog-trip__panel">
+            <h2 id="kitchen-interior-trip-title">Планируете поездку?</h2>
+            <p>
+              На сайте можно изучить <a href={sitePath('/guide/#scheme')}>схему четырёх этажей</a>,{' '}
+              <a href={sitePath('/contacts/#location')}>адрес</a> и{' '}
+              <a href={sitePath('/contacts/#transport')}>общественный транспорт</a>. Наличие конкретных товаров и моделей лучше уточнять перед визитом.
+            </p>
+          </div>
+        </aside>
+      </div>
+    </section>
+  );
+}
+
+const furnitureGuides = [
+  {
+    route: '/catalog/divani_i_kresla',
+    title: 'Диваны и кресла',
+    description: 'Мягкая мебель должна подходить размерам комнаты, сценарию использования и повседневным привычкам.',
+    points: [
+      { title: 'Задача мебели', text: 'Нужна зона для гостей, место для чтения или полноценное спальное место? Приоритеты по форме и механизму будут разными.' },
+      { title: 'Размеры и планировка', text: 'Нарисуйте схему комнаты и обязательно оставьте доступ к дверям, окнам, шкафам и основным проходам.' },
+      { title: 'Материалы и проверка', text: 'Сравните обивку и наполнитель, оцените посадку лично и проверьте основные параметры ухода и гарантии.' },
+    ],
+    related: ['Диваны ↗', 'Кресла ↗', 'Все направления ↗'],
+  },
+  {
+    route: '/catalog/divani_i_kresla/divani',
+    title: 'Диваны',
+    description: 'Диван для ежедневного отдыха и диван для сна решают разные задачи. Перед выбором измерьте свободное пространство, проходы и место для раскладывания.',
+    points: [
+      { title: 'Сначала измерьте пространство', text: 'Запишите ширину стены и расстояние до соседней мебели. Для раскладной модели проверьте глубину в полностью разложенном виде и проход к двери.' },
+      { title: 'Сравните посадку и механизм', text: 'Посидите на диване несколько минут: проверьте глубину сиденья, высоту спинки и поддержку поясницы. Если планируете спать ежедневно, оцените ровность спальной поверхности и удобство раскладывания.' },
+      { title: 'Проверьте материал и уход', text: 'Попросите сведения о стойкости обивки к истиранию, способах очистки и составе наполнителя. Уточните ограничения по нагрузке и гарантию.' },
+    ],
+    related: ['Кресла ↗', 'Кровати ↗', 'Все направления ↗'],
+  },
+  {
+    route: '/catalog/divani_i_kresla/kresla',
+    title: 'Кресла',
+    description: 'Удобство кресла определяется глубиной и наклоном сиденья, поддержкой спины и соответствием росту человека.',
+    points: [
+      { title: 'Проверьте размер', text: 'Измерьте место для кресла и расстояние до столика, дивана или прохода. У моделей с реклайнером учитывайте пространство при откинутой спинке.' },
+      { title: 'Оцените посадку', text: 'Сядьте в привычной позе: стопы должны иметь опору, подлокотники не должны поднимать плечи. Проверьте, удобно ли вставать.' },
+      { title: 'Уточните уход', text: 'Для обивки уточните условия очистки и особенности материала. Для поворотных и раскладных моделей проверьте ход механизма.' },
+    ],
+    related: ['Диваны ↗', 'Столы и столики ↗', 'Все направления ↗'],
+  },
+  {
+    route: '/catalog/hranenie_i_porjadok',
+    title: 'Хранение',
+    description: 'Продуманное хранение помогает меньше загромождать комнаты. Начинайте не с фасадов, а со списка вещей и доступных размеров.',
+    points: [
+      { title: 'Разделите вещи по частоте использования', text: 'То, что нужно ежедневно, разместите на удобной высоте. Сезонные предметы можно хранить выше.' },
+      { title: 'Сравните способы открытия', text: 'Для тесных проходов проверьте варианты раздвижных дверей и выдвижных ящиков.' },
+      { title: 'Проверьте крепление', text: 'Высокие элементы требуют устойчивой установки и крепления согласно инструкции.' },
+    ],
+    related: ['Комоды и тумбы ↗', 'Все направления ↗'],
+  },
+  {
+    route: '/catalog/hranenie_i_porjadok/komodi_i_tumbi',
+    title: 'Комоды и тумбы',
+    description: 'Комод полезен там, где важна вместительность без массивного шкафа. Начните с того, что именно предстоит хранить и какой доступ нужен каждый день.',
+    points: [
+      { title: 'Подберите высоту и глубину', text: 'Для узкого прохода измеряйте не только глубину корпуса, но и пространство перед открытыми ящиками. В спальне учитывайте расстояние до кровати и дверей.' },
+      { title: 'Оцените внутреннее устройство', text: 'Сравните полное и частичное выдвижение ящиков, плавность направляющих и возможности установки разделителей. Небольшие предметы удобнее хранить в нескольких неглубоких ящиках.' },
+      { title: 'Уточните безопасность крепления', text: 'Высокие комоды следует закреплять согласно инструкции производителя, особенно если дома есть дети. Проверьте устойчивость и допустимую нагрузку на верхнюю поверхность.' },
+    ],
+    related: ['Кровати ↗', 'Хранение ↗', 'Все направления ↗'],
+  },
+  {
+    route: '/catalog/krovati_i_matrasi',
+    title: 'Кровати и матрасы',
+    description: 'Даже хороший матрас не будет работать как задумано, если его размер и тип не подходят выбранному основанию.',
+    points: [
+      { title: 'Определите габариты', text: 'Измерьте спальное место, включая наружные размеры кровати. Учтите дополнительное место для прохода и тумбочек.' },
+      { title: 'Сравните конструкции', text: 'Уточните, какой тип основания рекомендует производитель матраса, допустимую нагрузку и возможность проветривания.' },
+      { title: 'Проверьте ощущения', text: 'Если есть возможность, полежите на матрасе в привычном положении и обратите внимание на поддержку спины и плеч. Уточните правила ухода.' },
+    ],
+    related: ['Кровати ↗', 'Комоды и тумбы ↗', 'Все направления ↗'],
+  },
+  {
+    route: '/catalog/krovati_i_matrasi/krovati',
+    title: 'Кровати',
+    description: 'Выбор кровати начинается с размеров комнаты, расположения дверей и желания свободно проходить вокруг спального места.',
+    points: [
+      { title: 'Измерьте проходы', text: 'Отметьте на плане наружные размеры каркаса, а не только размер матраса. Если рядом шкаф, проверьте открывание дверей и ящиков.' },
+      { title: 'Сравните основание и конструкцию', text: 'Проверьте совместимость каркаса с матрасом, тип основания и допустимую нагрузку. У модели с подъёмным механизмом оцените доступ к нише для хранения.' },
+      { title: 'Подберите удобную высоту', text: 'Проверьте высоту посадки вместе с матрасом: вставать с кровати должно быть удобно. Уточните требования к уходу за материалами и условия сборки.' },
+    ],
+    related: ['Кровати и матрасы ↗', 'Комоды и тумбы ↗', 'Все направления ↗'],
+  },
+  {
+    route: '/catalog/kuhni_i_interer/modulnye_kuhni',
+    title: 'Модульные кухни',
+    description: 'Модульная кухня собирается из типовых корпусов, но её удобство зависит от точных замеров помещения и размещения техники.',
+    points: [
+      { title: 'Подготовьте план комнаты', text: 'Измерьте длины стен, высоту, дверные и оконные проёмы. Отметьте расположение воды, вентиляции, электрических розеток и выступающих труб.' },
+      { title: 'Продумайте зоны', text: 'Разделите задачи приготовления, мойки, хранения и размещения техники. Проверьте свободное открывание ящиков и дверец.' },
+      { title: 'Уточните ограничения модулей', text: 'Сверьте доступные ширины, высоту столешницы и варианты угловых соединений. До заказа проверьте монтаж, подрезки и возможность замены отдельных секций.' },
+    ],
+    related: ['Комоды и тумбы ↗', 'Столы и столики ↗', 'Все направления ↗'],
+  },
+  {
+    route: '/catalog/stoli_i_stoliki',
+    title: 'Столы и столики',
+    description: 'Стол выбирают не только по числу мест: важно, чтобы за ним было удобно сидеть и свободно перемещаться.',
+    points: [
+      { title: 'Рассчитайте площадь', text: 'Примерьте габариты столешницы в помещении. Для раздвижной модели учитывайте размер в раскрытом положении.' },
+      { title: 'Проверьте посадку', text: 'Оцените место для ног и удобство стульев, которые планируете использовать вместе со столом.' },
+      { title: 'Учитывайте уход', text: 'Сравните поверхности по устойчивости к влаге, нагреву и ежедневной уборке.' },
+    ],
+    related: ['Стулья ↗', 'Все направления ↗'],
+  },
+  {
+    route: '/catalog/stulja_i_skami/stulja',
+    title: 'Стулья',
+    description: 'За обеденным столом важны не только форма и цвет стула, но и положение ног, поддержка спины и возможность свободно отодвинуть сиденье.',
+    points: [
+      { title: 'Соотнесите стол и стул', text: 'Сравните высоту сиденья и столешницы, пространство для коленей и наличие подлокотников. Проверьте, помещаются ли стулья под стол в собранном виде.' },
+      { title: 'Оцените комфорт', text: 'Посидите на стуле хотя бы несколько минут. Обратите внимание на наклон и форму спинки, жёсткость сиденья и устойчивость ножек.' },
+      { title: 'Подберите практичную отделку', text: 'Для кухни важны возможность очистки поверхности и устойчивость к ежедневному использованию. Для пола может потребоваться защита ножек.' },
+    ],
+    related: ['Столы и столики ↗', 'Кресла ↗', 'Все направления ↗'],
+  },
+] as const;
+
+type FurnitureGuide = typeof furnitureGuides[number];
+
+function FurnitureGuidePage({ guide }: { guide: FurnitureGuide }) {
+  return (
+    <section className="furniture-guide page-width" aria-labelledby="furniture-guide-title">
+      <div className="furniture-guide__body">
+        <nav className="contacts-breadcrumb" aria-label="Навигационная цепочка">
+          <a href={sitePath('/')}>Главная</a>
+          <span aria-hidden="true">/</span>
+          <a href={sitePath('/catalog/')}>Мебель и интерьер</a>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">{guide.title}</span>
+        </nav>
+
+        <header className="catalog-intro furniture-guide__intro">
+          <p className="eyebrow">Справочник по интерьеру</p>
+          <h1 id="furniture-guide-title">{guide.title}</h1>
+          <p>{guide.description}</p>
+        </header>
+
+        <section className="furniture-guide__attention" aria-labelledby="furniture-guide-attention-title">
+          <h2 id="furniture-guide-attention-title">На что обратить внимание</h2>
+          <div className="furniture-guide__points">
+            {guide.points.map(({ title, text }, index) => (
+              <article className="furniture-guide__point" key={title}>
+                <span className="furniture-guide__number">{String(index + 1).padStart(2, '0')}</span>
+                <div>
+                  <h3>{title}</h3>
+                  <p>{text}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="furniture-guide__related" aria-labelledby="furniture-guide-related-title">
+          <h2 id="furniture-guide-related-title">Смотрите также</h2>
+          <div>
+            {guide.related.map((item) => <span key={item}>{item}</span>)}
+          </div>
+        </section>
+
+        <aside className="catalog-trip furniture-guide__visit" aria-labelledby="furniture-guide-visit-title">
+          <div className="catalog-trip__panel">
+            <h2 id="furniture-guide-visit-title">Посмотреть варианты лично</h2>
+            <p>
+              Перед визитом в ТЦ «Богатырь» подготовьте размеры комнаты и фотографии интерьера.{' '}
+              <a href={sitePath('/guide/#scheme')}>Схема центра</a> поможет сориентироваться, а{' '}
+              <a href={sitePath('/contacts/')}>контакты и проезд</a> — спланировать дорогу. Ассортимент у продавцов может изменяться.
+            </p>
+          </div>
+        </aside>
+      </div>
+    </section>
+  );
+}
 
 function Brand() {
   return (
@@ -197,7 +588,7 @@ function ContactsOverview() {
           <h1 id="contacts-title">До встречи<br />в «Богатыре».</h1>
         </div>
         <div className="contacts-intro__summary">
-          <p>Богатырский проспект, 18к2. Выберите удобный способ добраться и спланируйте свой визит.</p>
+          <p>Богатырский проспект, 18к2, литера А. Выберите удобный способ добраться и спланируйте свой визит.</p>
           <a href={mapUrl} target="_blank" rel="noreferrer">
             Открыть Яндекс Карты <ArrowUpRight />
           </a>
@@ -217,7 +608,7 @@ function ContactsOverview() {
           <p className="eyebrow">Администрация</p>
           <a className="contact-card__phone" href="tel:+79313133501">+7 (931) 313-35-01</a>
           <a className="contact-card__phone" href="tel:+78124188671">+7 (812) 418-86-71</a>
-          <a className="contact-card__email" href="mailto:direct@bogatir.online">direct@bogatir.online</a>
+          <a className="contact-card__email" href="mailto:bogatyr18k2@gmail.com">bogatyr18k2@gmail.com</a>
         </article>
 
         <article className="contact-card">
@@ -225,6 +616,7 @@ function ContactsOverview() {
           <p className="eyebrow">Отдел аренды</p>
           <a className="contact-card__phone" href="tel:+78125963476">+7 (812) 596-34-76</a>
           <a className="contact-card__phone" href="tel:+78122955200">+7 (812) 295-52-00</a>
+          <a className="contact-card__phone" href="tel:+79313131878">+7 (931) 313-18-78</a>
           <p className="contact-card__note">По будням, 10:00–18:00</p>
           <a className="contact-card__rental" href={sitePath('/about/#rental')}>Об аренде помещений <ArrowRight /></a>
         </article>
@@ -259,7 +651,7 @@ function VisitSection({ sectionId }: { sectionId: string }) {
           <p className="eyebrow visit-copy__eyebrow">Спланируйте визит</p>
           <h2 id="visit-title">Мы рядом.<br />Заглядывайте.</h2>
           <a className="visit-copy__address" href={mapUrl} target="_blank" rel="noreferrer">
-            Санкт-Петербург, Богатырский<br className="visit-copy__address-break" /> проспект, 18, корпус 2
+            Санкт-Петербург, Богатырский<br className="visit-copy__address-break" /> проспект, 18, корпус 2, литера А
           </a>
           <p className="visit-copy__hours"><Clock />Ежедневно, 11:00–21:00</p>
           <a className="button button--dark visit-copy__route" href={mapUrl} target="_blank" rel="noreferrer">
@@ -322,7 +714,7 @@ function OrientationSection() {
 }
 
 function AboutPage() {
-  const rentalMail = 'mailto:direct@bogatir.online?subject=Аренда%20—%20ТЦ%20«Богатырь»';
+  const rentalMail = 'mailto:bogatyr18k2@gmail.com?subject=Аренда%20—%20ТЦ%20«Богатырь»';
 
   return (
     <>
@@ -443,7 +835,8 @@ function AboutPage() {
             <p className="eyebrow">Отдел аренды</p>
             <a href="tel:+78125963476">+7 (812) 596-34-76</a>
             <a href="tel:+78122955200">+7 (812) 295-52-00</a>
-            <a className="about-rental__email" href="mailto:direct@bogatir.online">direct@bogatir.online <ArrowUpRight /></a>
+            <a href="tel:+79313131878">+7 (931) 313-18-78</a>
+            <a className="about-rental__email" href="mailto:bogatyr18k2@gmail.com">bogatyr18k2@gmail.com <ArrowUpRight /></a>
             <p>По будням, 10:00–18:00</p>
             <p className="about-rental__note">По информации действующего сайта.</p>
           </aside>
@@ -467,19 +860,35 @@ function AboutPage() {
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [selectedFloor, setSelectedFloor] = useState(1);
+  const [selectedFloor, setSelectedFloor] = useState(() => {
+    const requestedFloor = Number(new URLSearchParams(window.location.search).get('floor'));
+    return Number.isInteger(requestedFloor) && requestedFloor >= 1 && requestedFloor <= 4 ? requestedFloor : 1;
+  });
   const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
   const pathname = window.location.pathname.slice(basePath.length).replace(/\/$/, '') || '/';
   const isContactsPage = pathname === '/contacts';
   const isAboutPage = pathname === '/about';
-  const isHomePage = !isContactsPage && !isAboutPage;
+  const isGuidePage = pathname === '/guide';
+  const isCatalogPage = pathname === '/catalog';
+  const isKitchenInteriorPage = pathname === '/catalog/kuhni_i_interer';
+  const furnitureGuide = furnitureGuides.find(({ route }) => route === pathname);
+  const isFurnitureGuidePage = Boolean(furnitureGuide);
+  const isHomePage = !isContactsPage && !isAboutPage && !isGuidePage && !isCatalogPage && !isKitchenInteriorPage && !isFurnitureGuidePage;
 
   useEffect(() => {
-    document.title = isAboutPage
-      ? 'О центре и аренда помещений — Торговый центр «Богатырь»'
-      : isContactsPage
-        ? 'Контакты и как добраться — Торговый центр «Богатырь»'
-        : 'Богатырь — торговый центр';
+    document.title = isCatalogPage
+      ? 'Мебель и интерьер — Торговый центр «Богатырь»'
+      : isKitchenInteriorPage
+        ? 'Кухни и интерьер — Торговый центр «Богатырь»'
+      : furnitureGuide
+        ? `${furnitureGuide.title} — Торговый центр «Богатырь»`
+      : isGuidePage
+        ? 'Схема и инфраструктура — Торговый центр «Богатырь»'
+      : isAboutPage
+        ? 'О центре и аренда помещений — Торговый центр «Богатырь»'
+        : isContactsPage
+          ? 'Контакты и как добраться — Торговый центр «Богатырь»'
+          : 'Богатырь — торговый центр';
 
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setMenuOpen(false);
@@ -497,7 +906,7 @@ function App() {
       window.removeEventListener('keydown', closeOnEscape);
       window.removeEventListener('hashchange', scrollToHash);
     };
-  }, [isAboutPage, isContactsPage]);
+  }, [furnitureGuide, isAboutPage, isCatalogPage, isContactsPage, isGuidePage, isKitchenInteriorPage]);
 
   const closeMenu = () => setMenuOpen(false);
 
@@ -537,8 +946,12 @@ function App() {
               href={item.href}
               onClick={closeMenu}
               aria-current={
+                (isCatalogPage && item.label === 'Мебель и интерьер') ||
+                (isKitchenInteriorPage && item.label === 'Мебель и интерьер') ||
+                (isFurnitureGuidePage && item.label === 'Мебель и интерьер') ||
                 (isContactsPage && item.label === 'Контакты и проезд') ||
-                (isAboutPage && item.label === 'О центре')
+                (isAboutPage && item.label === 'О центре') ||
+                (isGuidePage && item.label === 'Схема и инфраструктура')
                   ? 'page'
                   : undefined
               }
@@ -568,7 +981,7 @@ function App() {
               Место для дома, новых идей и встреч — на Богатырском проспекте.
             </p>
             <div className="hero__actions">
-              <a className="button button--accent" href="#directions">
+              <a className="button button--accent" href={sitePath('/guide/')}>
                 Схема комплекса <ArrowRight />
               </a>
               <a className="button button--outline" href={sitePath('/contacts/')}>
@@ -581,7 +994,7 @@ function App() {
           </div>
 
           <a className="hero__address" href={mapUrl} target="_blank" rel="noreferrer">
-            <Pin /> Богатырский проспект, 18к2
+            <Pin /> Богатырский проспект, 18к2, литера А
           </a>
         </section>
 
@@ -606,7 +1019,7 @@ function App() {
           })}
         </section>
 
-        <section className="ideas page-width" id="ideas" aria-labelledby="ideas-title">
+        <section className="ideas ideas--store-showcase page-width" id="ideas" aria-labelledby="ideas-title">
           <div className="ideas__intro">
             <div>
               <p className="eyebrow ideas__eyebrow">За идеями. За покупками. Рядом.</p>
@@ -618,56 +1031,48 @@ function App() {
           </div>
 
           <div className="idea-grid">
-            {ideaCards.map(({ number, title, text, Icon, tone }) => (
-              <article className={`idea-card idea-card--${tone}`} key={number}>
-                <span className="idea-card__number">{number}</span>
-                <Icon className="idea-card__icon" />
-                <h3>{title}</h3>
-                <p>{text}</p>
-              </article>
-            ))}
+            {ideaCards.map(({ number, title, text, href, Icon, tone }) => {
+              const content = (
+                <>
+                  <span className="idea-card__number">{number}</span>
+                  <Icon className="idea-card__icon" />
+                  <h3>{title}</h3>
+                  <p>{text}</p>
+                </>
+              );
+
+              return href ? (
+                <a className={`idea-card idea-card--${tone}`} href={sitePath(href)} key={number}>
+                  {content}
+                </a>
+              ) : (
+                <article className={`idea-card idea-card--${tone}`} key={number}>
+                  {content}
+                </article>
+              );
+            })}
           </div>
+
+          <nav className="idea-links" aria-label="Полезные ссылки">
+            <a href={sitePath('/catalog/')}>Все направления мебели <ArrowUpRight /></a>
+            <a href="https://preview.bogatir.online/news/">Советы для интерьера <ArrowUpRight /></a>
+            <a href={sitePath('/#stores')}>Покупки в центре <ArrowUpRight /></a>
+          </nav>
         </section>
 
-        <section className="scheme-section" aria-labelledby="scheme-title">
-          <div className="scheme-section__inner page-width">
-            <div className="scheme-copy">
-              <p className="eyebrow scheme-copy__eyebrow">Схема и инфраструктура</p>
-              <h2 id="scheme-title">У каждого визита<br />свой маршрут.</h2>
-              <p className="scheme-copy__description">
-                Найдите вход, выберите этаж и посмотрите, где расположены лифты, эскалаторы и санузлы.
-              </p>
-              <div className="floor-picker" aria-label="Выберите этаж">
-                {floors.map((floor) => (
-                  <button
-                    aria-pressed={selectedFloor === floor}
-                    className={`floor-picker__button${selectedFloor === floor ? ' floor-picker__button--active' : ''}`}
-                    key={floor}
-                    onClick={() => setSelectedFloor(floor)}
-                    type="button"
-                  >
-                    <span>{floor}</span>
-                    <span>этаж</span>
-                  </button>
-                ))}
-              </div>
-              <a className="scheme-copy__link" href="#scheme-placeholder">
-                Открыть схему комплекса <ArrowRight />
-              </a>
-            </div>
+        <StoreBrandsSection />
 
-            <div
-              className="scheme-placeholder"
-              id="scheme-placeholder"
-              role="img"
-              aria-label="Место для схемы комплекса"
-            />
-          </div>
+        <section className="scheme-section" aria-labelledby="scheme-title">
+          <GuidePreview selectedFloor={selectedFloor} onSelectFloor={setSelectedFloor} />
         </section>
           </>
         )}
 
         {isAboutPage && <AboutPage />}
+        {isCatalogPage && <CatalogPage />}
+        {isKitchenInteriorPage && <KitchenInteriorPage />}
+        {furnitureGuide && <FurnitureGuidePage guide={furnitureGuide} />}
+        {isGuidePage && <GuidePage selectedFloor={selectedFloor} onSelectFloor={setSelectedFloor} />}
 
         {isContactsPage && (
           <>
@@ -676,7 +1081,7 @@ function App() {
           </>
         )}
 
-        {!isAboutPage && <section className="transit-section" id="transport" aria-labelledby="transit-title">
+        {!isAboutPage && !isGuidePage && !isCatalogPage && !isKitchenInteriorPage && !isFurnitureGuidePage && <section className="transit-section" id="transport" aria-labelledby="transit-title">
           <div className="transit-section__inner page-width">
             <div className="transit-copy">
               <p className="eyebrow transit-copy__eyebrow">Как добраться</p>
@@ -708,7 +1113,7 @@ function App() {
                 <p className="route-detail__eyebrow"><span />Наземный транспорт</p>
                 <h3>Автобусы и троллейбусы</h3>
                 <p>
-                  Ориентируйтесь на остановки в районе Богатырского проспекта, 18, корпус 2. Проверьте подходящий маршрут перед поездкой.
+                  Ориентируйтесь на остановки в районе Богатырского проспекта, 18, корпус 2, литера А. Проверьте подходящий маршрут перед поездкой.
                 </p>
               </div>
 
@@ -724,7 +1129,7 @@ function App() {
           </div>
         </section>}
 
-        {!isAboutPage && <section className="parking-section" id="parking" aria-labelledby="parking-title">
+        {!isAboutPage && !isGuidePage && !isCatalogPage && !isKitchenInteriorPage && !isFurnitureGuidePage && <section className="parking-section" id="parking" aria-labelledby="parking-title">
           <div className="parking-section__inner page-width">
             <div className="parking-copy">
               <p className="eyebrow parking-copy__eyebrow">Приезжайте на автомобиле</p>
@@ -742,7 +1147,7 @@ function App() {
 
             <aside className="parking-card" aria-label="Информация о парковке">
               <span className="parking-card__mark">P</span>
-              <h3>Богатырский проспект,<br />18, корпус 2</h3>
+              <h3>Богатырский проспект,<br />18, корпус 2, литера А</h3>
               <p className="parking-card__detail">
                 <Pin />
                 <span>Ориентируйтесь на указатели въезда к торговому центру.</span>
@@ -751,9 +1156,9 @@ function App() {
                 <Info />
                 <span>Режим, оплата и расположение доступных мест — по действующим указателям парковки или у администрации.</span>
               </p>
-              <span className="parking-card__contact" aria-disabled="true">
+              <a className="parking-card__contact" href="tel:+79313133501">
                 Позвонить в администрацию <Phone />
-              </span>
+              </a>
             </aside>
           </div>
         </section>}
@@ -798,7 +1203,7 @@ function App() {
           <div className="footer-columns">
             <section className="footer-column">
               <h2>Ждём вас</h2>
-              <a href={mapUrl} target="_blank" rel="noreferrer">Санкт-Петербург, Богатырский проспект, 18,<br />корпус 2</a>
+              <a href={mapUrl} target="_blank" rel="noreferrer">Санкт-Петербург, Богатырский проспект, 18,<br />корпус 2, литера А</a>
               <p>Ежедневно, 11:00–21:00</p>
             </section>
 
@@ -806,12 +1211,12 @@ function App() {
               <h2>Администрация</h2>
               <a href="tel:+79313133501">+7 (931) 313-35-01</a>
               <a href="tel:+78124188671">+7 (812) 418-86-71</a>
-              <a href="mailto:direct@bogatir.online">direct@bogatir.online</a>
+              <a href="mailto:bogatyr18k2@gmail.com">bogatyr18k2@gmail.com</a>
             </section>
 
             <nav className="footer-column" aria-label="Навигация в подвале">
               <h2>Навигация</h2>
-              <a href={sitePath('/#directions')}>Схема и инфраструктура</a>
+              <a href={sitePath('/guide/')}>Схема и инфраструктура</a>
               <a href={sitePath('/about/#rental')}>Аренда помещений</a>
               <a href={sitePath('/contacts/#transport')}>Общественный транспорт</a>
               <a href={sitePath('/contacts/#parking')}>Парковка</a>
@@ -820,7 +1225,7 @@ function App() {
             <section className="footer-column">
               <h2>На связи</h2>
               <a href="https://vk.com/bogatir.online" target="_blank" rel="noreferrer">ВКонтакте <ArrowUpRight /></a>
-              <a href="mailto:direct@bogatir.online?subject=Сообщение%20об%20ошибке">Сообщить об ошибке</a>
+              <a href="mailto:bogatyr18k2@gmail.com?subject=Сообщение%20об%20ошибке">Сообщить об ошибке</a>
             </section>
           </div>
 
